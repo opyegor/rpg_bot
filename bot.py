@@ -11,15 +11,14 @@ from aiogram.utils.markdown import hbold
 from t import TOKEN
 
 from db import get_session
-from db_users import add_user, get_user_nickname
-
+from models import *
 dp = Dispatcher()
 
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
     async for session in get_session():
         try:
-            await add_user(session,message.from_user.id,message.from_user.full_name)
+            await User.add_user(session,message.from_user.id)
             await message.answer(f"Ты добавлен в базу, {hbold(message.from_user.full_name)}!")
         except:
             await message.answer(f"Ты уже в базе, {hbold(message.from_user.full_name)}!")
