@@ -17,10 +17,10 @@ dp = Dispatcher()
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
     async for session in get_session():
-        try:
+        if not await User.check_tg_user_exist(session,message.from_user.id):
             await User.add_user(session,message.from_user.id)
             await message.answer(f"Ты добавлен в базу, {hbold(message.from_user.full_name)}!")
-        except:
+        else:
             await message.answer(f"Ты уже в базе, {hbold(message.from_user.full_name)}!")
 
 async def main() -> None:

@@ -7,7 +7,10 @@ from db import get_session
 import models.user
 
 @pytest.mark.asyncio
-async def test_User():
+async def test_User(tg_id=6270985520,pk=1):
     async for session in get_session():
-        u = await models.user.User.check_user_exist(session, 6270985520)
-        assert u.pk == 1
+        assert await models.user.User.check_tg_user_exist(session, tg_id)
+
+
+if __name__ == "__main__":
+    asyncio.run(test_User())
