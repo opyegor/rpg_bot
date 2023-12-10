@@ -13,11 +13,14 @@ class User(Base):
     def __repr__(self) -> str:
         return f"User(в базе:{self.pk}, id тг:{self.tg_id} {self.banned * 'ЗАБАНЕН'}"
 
-    async def get_user_nickname(session,id):
-        result = await session.execute(select(User).where(User.id==id))
-        return result.scalars().all()
+    async def check_user_exist(session,tg_id):
+        result = await session.execute(select(User).where(User.tg_id==tg_id))
+        return result.scalars().one()
 
     async def add_user(session, tg_id):
         user = User(tg_id=tg_id)
         session.add(user)
         await session.commit()
+
+
+    
