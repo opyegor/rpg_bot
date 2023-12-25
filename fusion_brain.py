@@ -39,9 +39,13 @@ class Req:
     async def check_generation(self, request_id, attempts=10, delay=10):
         while attempts > 0:
             response = requests.get(self.URL + 'key/api/v1/text2image/status/' + request_id, headers=self.AUTH_HEADERS)
+            
             data = response.json()
-            if not data['censored']: return 0
-            if data['status'] == 'DONE': return data['images'][0]
+
+            if data['status'] == 'DONE': 
+                #print(data)
+                if data['censored']: return 0
+                else: return data['images'][0]
 
             attempts -= 1
             await asyncio.sleep(delay)
