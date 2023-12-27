@@ -16,6 +16,9 @@ class Hero(Base):
 
     energy = Column(INTEGER, default=100)
 
+    #tile_id = Column(BigInteger, ForeignKey('map_table.pk'), nullable=True, default=0)
+    #tile = relationship('Map', backref='tile', lazy='subquery')
+
     def __repr__(self) -> str:
         return f"{self.nick}, id владельца:{self.owner_id}, энергии {self.energy}"
 

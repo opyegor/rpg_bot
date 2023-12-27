@@ -2,3 +2,4 @@
 from .base import Base
 from .user import User
 from .hero import Hero
+from .map import Map
