@@ -18,6 +18,16 @@ class Map(Base):
     def __repr__(self) -> str:
         return f"tile #{self.pk} - x:{self.x},y:{self.y}, тип {tiles_names[self._type]}"
 
+    def sync_add_tile(session,x, y,_type):
+        m = Map(x=x, y=y,_type=_type)
+        session.add(m)
+        session.commit()
+
+    async def add_tile(session, x, y,_type):
+        m = Map(x=x, y=y,_type=_type)
+        session.add(m)
+        await session.commit()
+
     async def get_tile_by_cors(self,cors):
         x,y = cors
         from_db = await session.execute(select(Map).where(Map.x == x).where(Map.y == y))
