@@ -22,6 +22,9 @@ class Hero(Base):
     tile = relationship('Map', backref='tile', lazy='subquery')
 
     async def init(self,session):
+        if self.tile_id is None:
+            await self.spawn(session)
+
         tmp = await session.execute(select(Map).where(Map.pk == self.tile_id))
         self.tile = tmp.scalar()
         self.x = self.tile.x
