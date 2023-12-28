@@ -140,34 +140,41 @@ async def travel_handler(tg_id,chat_id,state):
 
 @dp.callback_query(lambda c: c.data.startswith('go'))
 async def process_group_buttons(callback_query: types.CallbackQuery, state):
-    direction = callback_query.data.split("_")[1]
-
-    sides = {'left':[-1,0],'right':[1,0],'up':[0,-1],'down':[0,1],'stop':[0,0]}
-    delta = sides[direction]
-
-    state_data = await state.get_data()
-    hero_id = state_data.get("active_hero_id")
-    tg_id = state_data.get("tg_id")
-    
-    async for session in get_session():
-        res = await hero.active_checker(hero_id,callback_query.message.from_user.id,session)
-        if res is None:
-            await command_create_hero_handler(message,state)
-            return 0
-        hero_id = res
-
-    async for session in get_session():
-        h = await Hero.get_hero_by_id(session,hero_id)
-        await h.init(session)
-        new_cors = [h.x + delta[0], h.y + delta[1]]
-        await h.tp(session,new_cors)
-    
-    if direction != 'stop':
-        await callback_query.answer(f"топ топ...")
+    if await state.get_state() == DataInput.travel_begin:
+        state_data = await state.get_data()
+        tg_id = state_data.get("tg_id")
+        await bot.send_message(tg_id, 'Ты уже в путешествии!')
+        return 0
     else:
-        await callback_query.answer(f"куда прешь!")
+        direction = callback_query.data.split("_")[1]
 
-    await travel_handler(tg_id, callback_query.message.chat.id, state)
+        sides = {'left':[-1,0],'right':[1,0],'up':[0,-1],'down':[0,1],'stop':[0,0]}
+        delta = sides[direction]
+
+        state_data = await state.get_data()
+        hero_id = state_data.get("active_hero_id")
+        tg_id = state_data.get("tg_id")
+        
+        async for session in get_session():
+            res = await hero.active_checker(hero_id,callback_query.message.from_user.id,session)
+            if res is None:
+                await command_create_hero_handler(message,state)
+                return 0
+            hero_id = res
+
+        async for session in get_session():
+            h = await Hero.get_hero_by_id(session,hero_id)
+            await h.init(session)
+            new_cors = [h.x + delta[0], h.y + delta[1]]
+            await h.tp(session,new_cors)
+        
+        if direction != 'stop':
+            await callback_query.answer(f"топ топ...")
+            await travel_handler(tg_id, callback_query.message.chat.id, state)
+        else:
+            await callback_query.answer(f"куда прешь!")
+
+        
 
 
 @dp.message(Command('heroes'))
@@ -194,6 +201,7 @@ async def heroes(message, state):
 
 @dp.callback_query(lambda c: c.data.startswith('hero'))
 async def process_group_buttons(callback_query: types.CallbackQuery, state):
+   
     hero_pk = int(callback_query.data.split()[1])
 
     state_data = await state.get_data()
