@@ -159,7 +159,7 @@ async def process_group_buttons(callback_query: types.CallbackQuery, state):
         async for session in get_session():
             res = await hero.active_checker(hero_id,callback_query.message.from_user.id,session)
             if res is None:
-                await command_create_hero_handler(message,state)
+                await command_start_handler(callback_query.message)
                 return 0
             hero_id = res
 
@@ -185,20 +185,24 @@ async def heroes(message, state):
 
     async for session in get_session():
         user = await User.get_user_by_tg(session,message.from_user.id)
-        heroes = await Hero.get_heroes_by_user(session,user)
-        if len(heroes) == 0: 
-            await command_create_hero_handler(message,state)
+        if user is None: 
+            await command_help_handler(message)
             return 0
-        await message.answer("Выбирай кем играть:")
-        for h in heroes:
-            await h.init(session)
-            if h.tile_id is None: await h.spawn(session)
-            
-            builder = InlineKeyboardBuilder()
-            builder.button(text="Сделать активным", callback_data=f"hero {h.pk}")
-            
-            await bot.send_photo(message.chat.id, photo=h.avatar_file_id,
-                                caption=str(h), reply_markup=builder.as_markup())
+        else:
+            heroes = await Hero.get_heroes_by_user(session,user)
+            if len(heroes) == 0: 
+                await command_create_hero_handler(message,state)
+                return 0
+            await message.answer("Выбирай кем играть:")
+            for h in heroes:
+                await h.init(session)
+                if h.tile_id is None: await h.spawn(session)
+                
+                builder = InlineKeyboardBuilder()
+                builder.button(text="Сделать активным", callback_data=f"hero {h.pk}")
+                
+                await bot.send_photo(message.chat.id, photo=h.avatar_file_id,
+                                    caption=str(h), reply_markup=builder.as_markup())
 
 @dp.callback_query(lambda c: c.data.startswith('hero'))
 async def process_group_buttons(callback_query: types.CallbackQuery, state):

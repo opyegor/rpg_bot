@@ -15,6 +15,8 @@ from io import BytesIO
 async def active_checker(hero_id,tg_id,session):
     if hero_id is None:
         user = await User.get_user_by_tg(session,tg_id)
+        if user is None: 
+            return None
         heroes = await Hero.get_heroes_by_user(session,user)
         if len(heroes) == 0: 
             return None
