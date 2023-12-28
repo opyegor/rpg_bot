@@ -102,6 +102,7 @@ async def travel_handler(tg_id,chat_id,state):
             await create_hero_handler_start(tg_id,state)
             return 0
         hero_id = res
+        await state.update_data(active_hero_id=hero_id)
 
     await bot.send_message(tg_id,'Топ топ...')
     async for session in get_session():
