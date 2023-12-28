@@ -31,8 +31,8 @@ async def generate(message):
     return hero_file
     
 async def generate_around(bot,session,creature):
-    width = 7
-    height = 7
+    width = 3
+    height = 3
     
     cors = [creature.x, creature.y]
 
