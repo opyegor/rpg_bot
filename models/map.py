@@ -2,9 +2,10 @@ from sqlalchemy import Column, ForeignKey, BigInteger, String, INTEGER, Boolean
 from sqlalchemy.orm import relationship
 
 from sqlalchemy import select
+from random import randint
 
 from models.base import Base
-from tiles import *
+from .tiles import Tile
 
 class Map(Base):
     __tablename__ = "map_table"
@@ -18,21 +19,29 @@ class Map(Base):
     def __repr__(self) -> str:
         return f"tile #{self.pk} - x:{self.x},y:{self.y}, тип {tiles_names[self._type]}"
 
-    def sync_add_tile(session,x, y,_type):
-        m = Map(x=x, y=y,_type=_type)
-        session.add(m)
-        session.commit()
-
     async def add_tile(session, x, y,_type):
         m = Map(x=x, y=y,_type=_type)
         session.add(m)
         await session.commit()
 
-    async def get_tile_by_cors(self,cors):
+    async def get_tile_by_cors(session,cors):
         x,y = cors
         from_db = await session.execute(select(Map).where(Map.x == x).where(Map.y == y))
-        return Tile(from_db)
+        m = from_db.scalar()
+        if m is None:
+            return Tile(0,x,y,0)
+        return Tile(m.pk,m.x,m.y,m._type)
     
-    async def get_tile_by_id(self,id):
+    async def get_tile_by_id(session,id):
         from_db = await session.execute(select(Map).where(Map.pk == id))
-        return Tile(from_db)
+        info = from_db.scalar()
+        return Tile(id,info.x,info.y,info._type)
+
+    async def get_random_tile_id_where_might_stay(session):
+        tile_id = randint(0,100000)
+        tile = await Map.get_tile_by_id(session,id=tile_id)
+        while not tile.can_stay: 
+            tile_id = randint(0,100000)
+            tile = await Map.get_tile_by_id(session,id=tile_id)
+
+        return tile_id
